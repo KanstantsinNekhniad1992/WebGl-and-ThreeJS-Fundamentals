@@ -3,9 +3,10 @@ var example = (function () {
 
 	var scene = new THREE.Scene(),
 		renderer = window.WebGLRenderingContext ? new THREE.WebGLRenderer() : new THREE.CanvasRenderer(),
-		light = new THREE.AmbientLight(0xffffff),
+		light = new THREE.AmbientLight("#ffffff"),
 		camera,
-		monkey;
+		plane,
+		box;
 
 	function initScene() {
 		renderer.setSize(window.innerWidth, window.innerHeight);
@@ -19,30 +20,58 @@ var example = (function () {
 			1,
 			1000
 		);
-		camera.position.z = 5;
+		camera.position.z = 200;
 		scene.add(camera);
 
-		var loader = new THREE.JSONLoader();
-		loader.load("./src/monkey.json", function (geometry, materials) {
+		box = new THREE.Mesh(
+			new THREE.BoxGeometry(20, 20, 20),
+			new THREE.MeshBasicMaterial({
+				color: 0xFF0000
+			})
+		);
+		scene.add(box);
 
-			materials = new THREE.MeshBasicMaterial({
-				color: 0xFF0000,
-				wireframe: true
-			});
-
-			monkey = new THREE.Mesh(geometry, materials);
-			scene.add(monkey);
-			render();
+		var texture = THREE.ImageUtils.loadTexture('content/grasslight-big.jpg');
+		var planeMaterial = new THREE.MeshPhongMaterial({
+			map: texture,
+			side: THREE.DoubleSide
 		});
+
+		plane = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), planeMaterial);
+		plane.rotation.x = 90 * (Math.PI / 180);
+		plane.position.y = -10;
+		plane.name = 'plane';
+		scene.add(plane);
+		render();
 	}
 
 	function render() {
-		monkey.rotation.y +=0.01;
-
 		renderer.render(scene, camera);
 		requestAnimationFrame(render);
 	}
 
+	function checkKey(event) {
+
+		var left = 37,
+			up = 38,
+			right = 39,
+			down = 40,
+			increment = 1;
+
+		event = window.event;
+
+		if (event.keyCode === up) {
+			camera.position.z -= increment;
+		} else if (event.keyCode === down) {
+			camera.position.z += increment;
+		} else if (event.keyCode === right) {
+			camera.position.x += increment;
+		} else if (event.keyCode === left) {
+			camera.position.x -= increment;
+		}
+	}
+
+	window.onkeydown = checkKey;
 	window.onload = initScene;
 
 	return {
